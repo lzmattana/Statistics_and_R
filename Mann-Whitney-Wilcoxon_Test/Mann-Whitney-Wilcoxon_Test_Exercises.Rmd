@@ -1,0 +1,72 @@
+---
+title: "Mann-Whitney-Wilcoxon Test Exercises"
+output: html_notebook
+---
+
+Exercícios de teste de Mann-Whitney-Wilcoxon
+Vamos explorar as propriedades das estatísticas robustas. Usaremos um dos conjuntos de dados incluídos em R, que contém o peso dos pintinhos em gramas à medida que crescem do dia 0 ao dia 21. Esse conjunto de dados também divide os pintinhos por diferentes dietas protéicas, que são codificadas de 1 a 4. Usamos este conjunto de dados também mostra uma operação importante em R (não relacionada a resumos robustos): remodelar.
+
+Este conjunto de dados está integrado em R e pode ser carregado com:
+
+```{r}
+data(ChickWeight)
+head(ChickWeight)
+```
+
+```{r}
+plot( ChickWeight$Time, ChickWeight$weight, col=ChickWeight$Diet)
+```
+
+Primeiro, observe que as linhas aqui representam pontos no tempo e não indivíduos. Para facilitar a comparação de pesos em diferentes momentos e entre os diferentes pintinhos, remodelaremos os dados para que cada linha seja um pintinho. Em R podemos fazer isso com a função remodelar:
+
+```{r}
+chick = reshape(ChickWeight, idvar=c("Chick","Diet"), timevar="Time", direction="wide")
+head(chick)
+```
+```{r}
+chick = na.omit(chick)
+```
+
+Exercícios de teste Mann-Whitney-Wilcoxon nº 1
+
+Salve os pesos dos pintinhos no dia 4 da dieta 1 como um vetor x. Salve os pesos dos pintinhos no dia 4 da dieta 4 como um vetor y. Realize um teste t comparando xe y(em R a função t.test(x,y)realizará o teste). Em seguida, execute um teste de Wilcoxon xe y(em R a função wilcox.test(x,y)realizará o teste). Aparecerá um aviso de que um valor p exato não pode ser calculado com empates, portanto, é usada uma aproximação, o que é adequado para nossos propósitos.
+
+Realize um teste t de xe y, após adicionar um único pintinho com peso de 200 gramas x(à dieta 1 pintinhos). Qual é o valor p deste teste? O valor p de um teste está disponível com o seguinte código:t.test(x,y)$p.value
+
+```{r}
+x = chick$weight.4[chick$Diet == 1]
+y = chick$weight.4[chick$Diet == 4]
+t.test(c(x, 200), y)$p.value
+```
+
+Exercícios de teste Mann-Whitney-Wilcoxon nº 2
+
+Faça o mesmo para o teste de Wilcoxon. O teste de Wilcoxon é robusto ao outlier. Além disso, tem menos suposições que o teste t sobre a distribuição dos dados subjacentes.
+
+```{r}
+x = chick$weight.4[chick$Diet == 1]
+y = chick$weight.4[chick$Diet == 4]
+wilcox.test(c(x, 200), y, exact=FALSE)$p.value
+```
+
+Exercícios de teste Mann-Whitney-Wilcoxon nº 3
+
+Iremos agora investigar uma possível desvantagem da estatística do teste Wilcoxon-Mann-Whitney. Usando o código a seguir para fazer três boxplots, mostrando os verdadeiros pesos da Dieta 1 vs 4 e, em seguida, duas versões alteradas: uma com diferença adicional de 10 gramas e outra com diferença adicional de 100 gramas. Use xey conforme definido acima, NÃO aqueles com valores discrepantes adicionados.
+
+```{r}
+library(rafalib)
+
+x = chick$weight.4[chick$Diet == 1]
+y = chick$weight.4[chick$Diet == 4]
+
+mypar(1,3)
+boxplot(x,y)
+boxplot(x,y+10)
+boxplot(x,y+100)
+```
+Qual é a diferença na estatística do teste t (obtida t.test(x,y)$statistic)entre a adição de 10 e a adição de 100 a todos os valores no grupo 'y'? Pegue a estatística do teste t com xey + 10 e subtraia a estatística do teste t com xey + 100. O valor deve ser positivo.
+
+```{r}
+t.test(x,y+10)$statistic - t.test(x,y+100)$statistic
+```
+

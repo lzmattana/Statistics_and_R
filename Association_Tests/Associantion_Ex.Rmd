@@ -1,0 +1,41 @@
+---
+title: "Association Tests Exercises"
+output: html_notebook
+---
+
+In the previous video, Rafa showed how to calculate a Chi-square test from a table. Here we will show how to generate the table from data which is in the form of a dataframe, so that you can then perform an association test to see if two columns have an enrichment (or depletion) of shared occurences.
+
+Download the assoctest.csv file into your R working directory, and then read it into R:
+
+```{r}
+d = read.csv("assoctest.csv")
+head(d)
+```
+
+Association Tests Exercises #1
+
+Compute the Chi-square test for the association of genotype with case/control status (using the table() function and the chisq.test() function). Examine the table to see if it look enriched for association by eye. What is the X-squared statistic?
+
+```{r}
+tab <- table(d$allele, d$case)
+tab
+```
+
+```{r}
+chisq.test(tab)
+```
+
+```{r}
+chisq.test(tab)$p.value
+```
+A: 3.3437
+
+Association Tests Exercises #2
+Compute the Fisher's exact test ( fisher.test() ) for the same table. What is the p-value?
+
+```{r}
+tab = table(d$allele, d$case)
+
+fisher.test(tab)
+```
+

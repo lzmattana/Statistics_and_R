@@ -1,0 +1,115 @@
+---
+title: "Exploratory Data Analysis"    
+output: html_notebook
+---
+
+Gráficos de dispersão e correlação
+Os métodos descritos acima referem-se a variáveis univariadas . Nas ciências biomédicas é comum o interesse pela relação entre duas ou mais variáveis. Um exemplo clássico são os dados de altura pai/filho usados por Galton para entender a hereditariedade. Se resumissemos esses dados, poderíamos usar as duas médias e os dois desvios padrão, pois ambas as distribuições são bem aproximadas pela distribuição normal. Este resumo, no entanto, não descreve uma característica importante dos dados.
+
+```{r}
+# install.packages("UsingR")
+library(UsingR)
+library(dplyr)
+library(rafalib)
+```
+
+```{r}
+data("father.son")
+x=father.son$fheight
+y=father.son$sheight
+plot(x,y,xlab="Father's height in inches",ylab="Son's height in inches",main=paste("correlation =",signif(cor(x,y),2)))
+```
+O gráfico de dispersão mostra uma tendência geral: quanto mais alto o pai, mais alto é o filho. Um resumo desta tendência é o coeficiente de correlação que neste caso é de 0,5. Motivamos esta estatística tentando prever a altura do filho usando a do pai.
+
+Estratificação
+Suponha que sejamos solicitados a adivinhar a altura de filhos selecionados aleatoriamente. A altura média, 68,7 polegadas, é o valor com maior proporção (ver histograma) e seria a nossa previsão. Mas e se nos disserem que o pai tem 72 centímetros de altura, ainda adivinharemos 68,7?
+
+Observe que o pai é mais alto que a média. Ele é 1,7 desvios padrão mais alto que o pai médio. Então, deveríamos prever que o filho também é 1,75 desvios-padrão mais alto? Acontece que isso é uma superestimativa. Para ver isso, olhamos para todos os filhos cujos pais medem cerca de 72 polegadas. Fazemos isso estratificando as alturas dos filhos.
+
+```{r}
+groups <- split(y,round(x)) 
+boxplot(groups)
+```
+```{r}
+print(mean(y[ round(x) == 72]))
+
+```
+
+A estratificação seguida de boxplots permite ver a distribuição de cada grupo. A altura média dos filhos de pais com 72 anos é 70,7. Vemos também que as médias dos estratos parecem seguir uma linha reta. Esta linha refere-se à linha de regressão e sua inclinação está relacionada à correlação.
+
+Distribuição normal bivariada
+Um par de variáveis ​​​​aleatórias( X, sim)
+é considerado aproximado pela normal bivariada quando a proporção de valores abaixo, digamosx
+esim
+é aproximado por esta expressão:
+
+Pr ( X< uma , S< b ) =∫a− ∞∫b− ∞12π _σxσsim1 -ρ2-----√experiência(12 ( 1 −ρ2)[(x- _μxσx)2−2ρ ( _ _x- _μxσx) (sim-μsimσsim) +(sim-μsimσsim)2] )
+Uma definição mais intuitiva é a seguinte. Corrija um valorx
+e olhe para todos os pares( X, S)
+para qualX= x
+. Geralmente, em Estatística chamamos isso de condição de exercício . Estamos condicionandoS
+sobreX
+. Se um par de variáveis ​​aleatórias for aproximado por uma distribuição normal bivariada, então a distribuição deS
+condição emX= x
+é aproximado com uma distribuição normal para todosx
+. Vamos ver se isso acontece aqui. Tomamos 4 estratos diferentes para demonstrar isso:
+
+```{r}
+library(dplyr)
+groups <- split(y,round(x)) 
+mypar(2,2)
+for(i in c(5,8,11,14)){
+  qqnorm(groups[[i]],main=paste0("X=",names(groups)[i]," strata"),
+         ylim=range(y),xlim=c(-2.5,2.5))
+  qqline(groups[[i]])
+}
+```
+
+Agora voltamos à definição de correlação. A estatística matemática nos diz que quando duas variáveis ​​seguem uma distribuição normal bivariada, então, para qualquer valor dado dex
+a média doS
+em pares para os quaisX= x
+é
+
+μS+ rX-μXσXσS
+Observe que esta é uma linha com inclinaçãoRσSσX
+. Isso é conhecido como linha de regressão . Observe também que se os SDs forem iguais, então a inclinação da linha de regressão é a correlaçãoR
+. Portanto, se padronizarmosX
+eS
+a correlação é a inclinação da linha de regressão.
+
+Outra maneira de ver isso é formar uma previsãoS^
+, para cada SD longe da média emx
+, prevemosR
+SDs ausentes porS
+:
+
+S^-μSσS= rx- _μXσX
+com oμ
+representando as médias,σ
+os desvios padrão, eR
+a correlação. Portanto, se houver correlação perfeita, prevemos o mesmo número de SDs; se houver correlação 0, não usaremosx
+e para valores entre 0 e 1, a previsão está em algum ponto intermediário. Para valores negativos, simplesmente prevemos na direção oposta.
+
+Para confirmar que as aproximações acima são válidas aqui, vamos comparar a média de cada estrato com a linha de identidade e a linha de regressão
+
+```{r}
+library(dplyr)
+x=(x-mean(x))/sd(x)
+y=(y-mean(y))/sd(y)
+means=tapply(y,round(x*4)/4,mean)
+fatherheights=as.numeric(names(means))
+mypar(1,1)
+plot(fatherheights,means,ylab="average of strata of son heights",ylim=range(fatherheights))
+abline(0,cor(x,y))
+```
+Correlação de Spearman
+Assim como a média e o desvio padrão não são bons resumos quando os dados não são bem aproximados pela distribuição normal, a correlação não é um bom resumo quando pares de listas não são aproximados pela distribuição normal bivariada. Os exemplos incluem casos em que uma variável está relacionada a outra por uma função parabólica. Outro exemplo mais comum é causado por valores discrepantes ou extremos.
+
+```{r}
+a=rnorm(100);a[1]=10
+b=rnorm(100);b[1]=11
+plot(a,b,main=paste("correlation =",signif(cor(a,b),2)))
+```
+
+No exemplo acima os dados não estão associados, mas para um par ambos os valores são muito grandes. A correlação aqui é de cerca de 0,5. Isso é motivado apenas por esse ponto, pois retirá-lo reduz a correlação para cerca de 0. Um resumo alternativo para casos com valores discrepantes ou valores extremos é a correlação de Spearman, que se baseia em classificações em vez dos próprios valores.
+

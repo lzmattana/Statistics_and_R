@@ -1,0 +1,96 @@
+---
+title: "Median, MAD, and Spearman Correlation"
+output: html_notebook
+---
+Mediana, MAD e correlação de Spearman
+A aproximação normal é frequentemente útil na análise de dados de ciências biológicas. Porém, devido à complexidade dos dispositivos de medição, também é comum observar erroneamente pontos de dados gerados por um processo indesejado. Por exemplo, um defeito em um scanner pode produzir um punhado de intensidades muito altas ou um viés de PCR pode fazer com que um fragmento apareça com muito mais frequência do que outros. Portanto, podemos ter situações que são aproximadas por, por exemplo, 99 pontos de dados de uma distribuição normal padrão e um número grande.
+
+```{r}
+set.seed(1)
+x=c(rnorm(100,0,1)) ##real distribution
+x[23] <- 100 ##mistake made in 23th measurement
+boxplot(x)
+```
+
+Dados normalmente distribuídos com um ponto muito grande devido a um erro.
+
+Nas estatísticas nos referimos a esses tipos de pontos como outliers . Um pequeno número de valores discrepantes pode prejudicar toda uma análise. Por exemplo, observe como o ponto a seguir resulta na média amostral e na variância amostral muito distantes de 0 e 1, respectivamente.
+
+```{r}
+cat("The average is",mean(x),"and the SD is",sd(x))
+
+```
+
+A mediana
+A mediana, definida como o ponto com metade dos dados maiores e metade dos dados menores, é uma estatística resumida robusta a valores discrepantes. Observe o quanto a mediana está mais próxima de 0, o centro da nossa distribuição real:
+
+```{r}
+median(x)
+```
+
+O desvio absoluto mediano
+O desvio absoluto mediano (MAD) é um resumo robusto do desvio padrão. É definido calculando as diferenças entre cada ponto e a mediana e, a seguir, tomando a mediana de seus valores absolutos:
+
+1,4826 mediana |Xeu− mediana (Xeu) |
+
+O número1.4826
+é um fator de escala tal que o MAD é uma estimativa imparcial do desvio padrão. Observe o quanto estamos mais próximos de 1 com o MAD:
+
+```{r}
+mad(x)
+```
+
+Correlação de Spearman
+Anteriormente vimos que a correlação também é sensível a valores discrepantes. Aqui construímos uma lista independente de números, mas para a qual foi cometido um erro semelhante para a mesma entrada:
+
+```{r}
+set.seed(1)
+x=c(rnorm(100,0,1)) ##real distribution
+x[23] <- 100 ##mistake made in 23th measurement
+y=c(rnorm(100,0,1)) ##real distribution
+y[23] <- 84 ##similar mistake made in 23th measurement
+library(rafalib)
+mypar()
+plot(x,y,main=paste0("correlation=",round(cor(x,y),3)),pch=21,bg=1,xlim=c(-3,100),ylim=c(-3,100))
+abline(0,1)
+```
+
+Gráfico de dispersão mostrando dados normais bivariados com um sinal discrepante resultando em valores grandes em ambas as dimensões.
+A correlação de Spearman segue a ideia geral de mediana e MAD, a de utilização de quantis. A ideia é simples: convertemos cada conjunto de dados em classificações e depois calculamos a correlação:
+
+```{r}
+mypar(1,2)
+plot(x,y,main=paste0("correlation=",round(cor(x,y),3)),pch=21,bg=1,xlim=c(-3,100),ylim=c(-3,100))
+plot(rank(x),rank(y),main=paste0("correlation=",round(cor(x,y,method="spearman"),3)),pch=21,bg=1,xlim=c(-3,100),ylim=c(-3,100))
+abline(0,1)
+```
+
+Gráfico de dispersão dos dados originais (esquerda) e classificações (direita). A correlação de Spearman reduz a influência de outliers ao considerar as classificações em vez dos dados originais.
+Então, se essas estatísticas são robustas para valores discrepantes, por que usaríamos a versão não robusta? Em geral, se sabemos que existem valores discrepantes, então a mediana e o MAD são recomendados em vez da média e do desvio padrão. Contudo, há exemplos em que as estatísticas robustas são menos poderosas do que as versões não robustas.
+Notamos também que existe uma grande literatura estatística sobre Estatísticas Robustas que vai muito além da mediana e do MAD.
+
+Simetria de razões logarítmicas
+As proporções não são simétricas. Para ver isso, começaremos simulando a razão de dois números aleatórios positivos, que representarão a expressão dos genes em duas amostras:
+
+```{r}
+x <- 2^(rnorm(100))
+y <- 2^(rnorm(100)) 
+ratios <- x / y 
+```
+
+Taxas de relatórios ou mudanças de dobra são comuns nas ciências da vida. Suponha que você esteja estudando dados de proporção que mostram, digamos, a expressão genética antes e depois do tratamento. Você recebe dados de proporção, portanto valores maiores que 1 implicam que a expressão gênica foi maior após o tratamento. Se o tratamento não surtir efeito, devemos ver tantos valores abaixo de 1 quanto acima de 1. Um histograma parece sugerir que o tratamento de fato tem efeito:
+
+```{r}
+mypar(1,2)
+hist(ratios)
+
+logratios <- log2(ratios)
+hist(logratios)
+```
+
+Histograma das proporções original (esquerda) e logarítmica (direita).
+O problema aqui é que as proporções não são simétricas em torno de 1. Por exemplo, 1/32 está muito mais próximo de 1 do que 32/1. A obtenção de logs resolve esse problema. O logaritmo das proporções é obviamente simétrico em torno de 0 porque:
+registro( x / y) = registro( x ) − log( você) = − ( log( você) − registro( x ) ) = log( você/ x)
+
+Nas ciências da vida, a transformação logarítmica também é comumente usada porque as mudanças de dobra (multiplicativas) são a quantificação de interesse mais amplamente usada. Observe que uma alteração de 100 pode ser uma proporção de 100/1 ou 1/100. No entanto, 1/100 está muito mais próximo de 1 (sem alteração) do que 100: as proporções não são simétricas em relação a 1.
+

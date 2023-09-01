@@ -1,0 +1,45 @@
+---
+title: "Scatterplot Exercises"
+output: html_notebook
+---
+Vamos considerar uma amostra aleatória de finalistas da Maratona de Nova York em 2002. Esse conjunto de dados pode ser encontrado no pacote UsingR. Carregue a biblioteca e, em seguida, carregue o conjunto de dados nym.2002.
+
+Aqui usaremos os gráficos que aprendemos para explorar um conjunto de dados: algumas estatísticas sobre uma amostra aleatória de corredores da Maratona de Nova York em 2002. Este conjunto de dados pode ser encontrado no pacote UsingR (usado na avaliação anterior) . Carregue a biblioteca e, em seguida, carregue o conjunto de dados nym.2002 com a seguinte linha: 
+
+```{r}
+data(nym.2002, package="UsingR")
+head(nym.2002)
+```
+
+Exercícios de gráfico de dispersão nº 1
+Use dplyr para criar dois novos quadros de dados: masculino e feminino, com os dados de cada gênero. Para os homens, qual é a correlação de Pearson entre idade e tempo para terminar?
+
+```{r}
+library(dplyr)
+males <- filter(nym.2002, gender=="Male") 
+females <- filter(nym.2002, gender=="Female") 
+
+cor(males$age,males$time)
+```
+
+Exercícios de gráfico de dispersão nº 2
+Para as mulheres, qual é a correlação de Pearson entre idade e tempo para terminar?
+
+```{r}
+cor(females$age,females$time)
+```
+
+Exercícios de gráfico de dispersão nº 3
+Se interpretarmos estas correlações sem visualizar os dados, concluiríamos que quanto mais velhos ficamos, mais devagar corremos maratonas, independentemente do género. Veja gráficos de dispersão e boxplots de tempos estratificados por faixas etárias (20-25, 25-30, etc.). Depois de examinar os dados, qual é a conclusão mais razoável?
+
+```{r}
+library(rafalib)
+mypar(2,2)
+plot(females$age, females$time)
+plot(males$age, males$time)
+group <- floor(females$age/5) * 5
+boxplot(females$time~group)
+group <- floor(males$age/5) * 5
+boxplot(males$time~group)
+```
+

@@ -1,0 +1,35 @@
+---
+title: "Symmetry_of Log_Ratios_Exercises"
+output: html_notebook
+---
+Vimos que as variações multiplicativas são simétricas em torno de 0 quando estamos na escala logarítmica. Em outras palavras, se usarmos a escala logarítmica, 1/2 vez um número x e 2 vezes um número x estão igualmente distantes de x. Exploraremos isso com os dados da maratona de Nova York.
+
+```{r}
+time = sort(nym.2002$time)
+head(time)
+```
+
+Exercícios de simetria de razões logarítmicas nº 1
+
+Qual é o tempo mais rápido dividido pelo tempo mediano?
+
+```{r}
+min(time) / median(time)
+```
+
+Exercícios de simetria de razões logarítmicas nº 2
+
+Qual é o tempo mais lento dividido pelo tempo mediano?
+
+```{r}
+max(time) / median(time)
+```
+```{r}
+plot(time/median(time), ylim=c(1/4,4))
+abline(h=c(1/2,1,2))
+```
+
+```{r}
+plot(log2(time/median(time)),ylim=c(-2,2))
+abline(h=-1:1)
+```

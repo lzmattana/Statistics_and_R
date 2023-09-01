@@ -1,0 +1,59 @@
+---
+title: "Mann-Whitney-Wilcoxon Test"
+output: html_notebook
+---
+Aprendemos como a média amostral e o DP são suscetíveis a valores discrepantes. O teste t é baseado nessas medidas e também é suscetível. O teste de classificação de Wilcoxon (equivalente ao teste de Mann-Whitney) fornece uma alternativa. No código abaixo, realizamos um teste t nos dados para os quais o nulo é verdadeiro. No entanto, alteramos uma observação de soma por engano em cada amostra e os valores inseridos incorretamente são diferentes. Aqui vemos que o teste t resulta em um valor p pequeno, enquanto o teste de Wilcoxon não: 
+
+```{r}
+set.seed(779) ##779 escolhido aleatoriamente
+N=25
+x<- rnorm(N,0,1)
+y<- rnorm(N,0,1)
+```
+
+Crie valores discrepantes:
+
+```{r}
+x[1] <- 5
+x[2] <- 7
+cat("t-test pval:",t.test(x,y)$p.value)
+```
+
+```{r}
+cat("Wilcox test pval:",wilcox.test(x,y)$p.value)
+```
+
+A ideia básica é 1) combinar todos os dados, 2) transformar os valores em classificações, 3) separá-los novamente em seus grupos e 4) calcular a soma ou classificação média e realizar um teste.
+
+```{r}
+library(rafalib)
+mypar(1,2)
+
+stripchart(list(x,y),vertical=TRUE,ylim=c(-7,7),ylab="Observations",pch=21,bg=1)
+abline(h=0)
+
+xrank<-rank(c(x,y))[seq(along=x)]
+yrank<-rank(c(x,y))[-seq(along=y)]
+
+stripchart(list(xrank,yrank),vertical=TRUE,ylab="Ranks",pch=21,bg=1,cex=1.25)
+
+ws <- sapply(x,function(z) rank(c(z,y))[1]-1)
+text( rep(1.05,length(ws)), xrank, ws, cex=0.8)
+```
+
+Dados de duas populações com dois outliers. O gráfico da esquerda mostra os dados originais e o gráfico da direita mostra suas classificações. Os números são os valores w
+
+```{r}
+W <-sum(ws) 
+```
+
+Wé a soma das classificações do primeiro grupo em relação ao segundo grupo. Podemos calcular um valor p exato paraC
+baseado em combinatória. Também podemos usar o CLT, pois a teoria estatística nos diz que este Wé aproximado pela distribuição normal. Podemos construir uma pontuação z da seguinte forma:
+
+```{r}
+n1<-length(x);n2<-length(y)
+Z <- (mean(ws)-n2/2)/ sqrt(n2*(n1+n2+1)/12/n1)
+print(Z)
+```
+
+Aqui o Znão é grande o suficiente para nos dar um valor p inferior a 0,05. Estes fazem parte dos cálculos realizados pela função wilcox.testR.

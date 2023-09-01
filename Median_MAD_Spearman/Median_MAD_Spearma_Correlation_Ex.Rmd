@@ -1,0 +1,93 @@
+---
+title: "Median_MAD_Spearma_Correlation"
+output: html_notebook
+---
+
+Vamos explorar as propriedades das estatísticas robustas. Usaremos um dos conjuntos de dados incluídos em R, que contém o peso dos pintinhos em gramas à medida que crescem do dia 0 ao dia 21. Esse conjunto de dados também divide os pintinhos por diferentes dietas protéicas, que são codificadas de 1 a 4. Usamos este conjunto de dados também mostra uma operação importante em R (não relacionada a resumos robustos): remodelar.
+
+Este conjunto de dados está integrado em R e pode ser carregado com:
+
+```{r}
+data(ChickWeight)
+head(ChickWeight)
+plot( ChickWeight$Time, ChickWeight$weight, col=ChickWeight$Diet)
+```
+
+Primeiro, observe que as linhas aqui representam pontos no tempo e não indivíduos. Para facilitar a comparação de pesos em diferentes momentos e entre os diferentes pintinhos, remodelaremos os dados para que cada linha seja um pintinho. Em R podemos fazer isso com a função remodelar:
+
+```{r}
+chick = reshape(ChickWeight, idvar=c("Chick","Diet"), timevar="Time", direction="wide")
+```
+
+O significado desta linha é: remodelar os dados de longo para largo , onde as colunas Chick e Diet são os ID's e a coluna Time indica observações diferentes para cada ID. Agora examine o cabeçalho deste conjunto de dados:
+
+```{r}
+head(chick)
+```
+
+Também queremos remover quaisquer pintinhos que tenham observações perdidas em qualquer momento (NA para “não disponível”). A linha de código a seguir identifica essas linhas e as remove:
+
+```{r}
+chick = na.omit(chick)
+```
+
+Exercícios de correlação de mediana, MAD e Spearman nº 1
+
+Concentre-se nos pesos dos pintinhos no dia 4 (verifique os nomes das colunas de 'pintinho' e anote os números). Quanto aumenta a média do peso dos pintinhos no dia 4 se adicionarmos uma medida atípica de 3.000 gramas? Especificamente, qual é o peso médio dos pintinhos do dia 4, incluindo o pintinho discrepante, dividido pela média do peso dos pintinhos do dia 4 sem o pintinho discrepante. Dica: use c para adicionar um número a um vetor.
+
+```{r}
+chickout<-c(chick$weight.4,3000) # adicionando o outlier de valor 3000
+mean(chickout)/mean(chick$weight.4)
+```
+
+Exercícios de mediana, MAD e correlação de Spearman nº 2
+
+No exercício 1, vimos quão sensível a média é a valores discrepantes. Agora vamos ver o que acontece quando usamos a mediana em vez da média. Calcule a mesma proporção, mas agora usando a mediana em vez da média. Especificamente, qual é o peso médio dos pintinhos do dia 4, incluindo o pintinho discrepante, dividido pela mediana do peso dos pintinhos do dia 4 sem o pintinho discrepante.
+
+```{r}
+median(c(chick$weight.4, 3000))/median(chick$weight.4)
+```
+
+Exercícios de mediana, MAD e correlação de Spearman nº 3
+
+Agora tente a mesma coisa com o desvio padrão da amostra (a função sd em R). Adicione um pintinho com peso de 3.000 gramas aos pesos dos pintinhos a partir do dia 4. Quanto muda o desvio padrão? Qual é o desvio padrão com o pintinho discrepante dividido pelo desvio padrão sem o pintinho discrepante?
+
+```{r}
+sd(c(chick$weight.4, 3000))/sd(chick$weight.4)
+```
+
+Exercícios de correlação de mediana, MAD e Spearman nº 4
+
+Compare o resultado acima com o desvio absoluto mediano em R, que é calculado com a função mad. Observe que o louco não é afetado pela adição de um único valor discrepante. A função mad em R inclui o fator de escala 1,4826, de modo que mad e sd são muito semelhantes para uma amostra de uma distribuição normal. Qual é o MAD com o pintinho discrepante dividido pelo MAD sem o pintinho discrepante?
+
+```{r}
+mad(c(chick$weight.4, 3000))/mad(chick$weight.4)
+```
+
+Exercícios de mediana, MAD e correlação de Spearman nº 5
+
+Nossa última pergunta diz respeito a como a correlação de Pearson é afetada por um valor discrepante em comparação com a correlação de Spearman. A correlação de Pearson entre x e y é dada em R por cor(x,y). A correlação de Spearman é dada por cor(x,y,method="spearman").
+
+Faça um gráfico dos pesos dos pintinhos do dia 4 e do dia 21. Podemos ver que há alguma tendência geral, com os pintinhos de peso mais baixo no dia 4 tendo peso baixo novamente no dia 21, e da mesma forma para os pintinhos de peso alto.
+
+Calcule a correlação de Pearson dos pesos dos pintinhos do dia 4 e do dia 21. Agora calcule quanto a correlação de Pearson muda se adicionarmos um pintinho que pesa 3.000 no dia 4 e 3.000 no dia 21. Novamente, divida a correlação de Pearson com o pintinho discrepante sobre a correlação de Pearson calculada sem os outliers.
+
+```{r}
+plot(chick$weight.4,chick$weight.21)
+```
+```{r}
+cor(chick$weight.4,chick$weight.21)
+```
+
+```{r}
+plot(c(chick$weight.4,3000),c(chick$weight.21,3000))
+```
+
+```{r}
+cor(c(chick$weight.4,3000),c(chick$weight.21,3000))
+```
+
+```{r}
+cor(c(chick$weight.4,3000),c(chick$weight.21,3000))/cor(chick$weight.4,chick$weight.21)
+```
+
